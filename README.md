@@ -31,7 +31,6 @@ No stable API contract has been proposed yet.
 
 - Runtime: Bun
 - Web framework: Hono
-- Domain: RuneScape 3 only
 
 Additional infrastructure choices will be documented as decisions are made.
 
