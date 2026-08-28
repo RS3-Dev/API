@@ -3,7 +3,7 @@
 [Swagger API documentation](https://api.rs3.dev/docs)
 
 RS3.Dev is shared RuneScape 3 player-data infrastructure for community tools.
-Players will opt in through one shared plugin, and developers will read that
+Players can opt in through one shared plugin, and developers will read that
 data through a public API instead of maintaining a RuneMetrics scraping
 pipeline or distributing a separate data-collection plugin for each website.
 
