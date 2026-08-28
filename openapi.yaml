@@ -1,0 +1,1425 @@
+openapi: 3.1.0
+info:
+  title: RS3.Dev API
+  version: 0.8.0
+  summary: Public RuneScape 3 player data API
+  description: |
+    Draft contract for read-only XP, boss kill-count, collection-log, quest,
+    and achievement endpoints.
+
+    Usernames are public lookup keys and are matched case-insensitively. Current
+    and previously observed usernames can resolve to the same locally generated
+    player UUID.
+servers:
+  - url: /
+    description: Current host
+security: []
+tags:
+  - name: System
+    description: Service status
+  - name: XP
+    description: Current and historical player XP
+  - name: Bosses
+    description: Player boss kill counts and boss hiscores
+  - name: Boss Logs
+    description: Player boss drop-log totals and acquisition history
+  - name: Slayer Logs
+    description: Player Slayer log totals and acquisition history
+  - name: Quests
+    description: Current player quest statuses
+  - name: Achievements
+    description: Current normalized player achievement completion
+  - name: Reference
+    description: Numeric ID-to-name reference data used by player responses
+paths:
+  /health:
+    get:
+      tags:
+        - System
+      operationId: getHealth
+      summary: Check service health
+      description: Confirms that the HTTP process is running and accepting requests.
+      responses:
+        "200":
+          description: The service is running.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Health"
+              example:
+                status: ok
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /v1/players/{username}/xp:
+    parameters:
+      - $ref: "#/components/parameters/Username"
+    get:
+      tags:
+        - XP
+      operationId: getPlayerCurrentXp
+      summary: Get a player's current XP
+      description: |
+        Returns the most recently observed absolute XP value for every skill
+        currently known for the player.
+      responses:
+        "200":
+          description: The player's current XP values
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlayerCurrentXp"
+              example:
+                playerId: 6f758677-966a-4435-9859-e1b706478f48
+                username: thejoshj
+                skills:
+                  - skillId: 0
+                    xp: 13451234
+                    observedAt: "2026-08-26T18:15:00Z"
+                    receivedAt: "2026-08-26T18:15:01Z"
+                  - skillId: 1
+                    xp: 7291000
+                    observedAt: "2026-08-26T18:00:00Z"
+                    receivedAt: "2026-08-26T18:00:01Z"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/PlayerNotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /v1/players/{username}/xp/history:
+    parameters:
+      - $ref: "#/components/parameters/Username"
+    get:
+      tags:
+        - XP
+      operationId: getPlayerXpHistory
+      summary: Get a player's XP history
+      description: |
+        Returns graph-ready absolute XP points for the requested time range.
+        Historical XP is stored internally as deltas; the API reconstructs
+        absolute values before returning them.
+
+        Supply either `days` or both `from` and `to`. With `interval=auto`, the
+        response may contain more than one interval when the requested range
+        crosses retention boundaries. Every point therefore identifies its
+        interval.
+      parameters:
+        - $ref: "#/components/parameters/Days"
+        - $ref: "#/components/parameters/SkillIds"
+        - $ref: "#/components/parameters/From"
+        - $ref: "#/components/parameters/To"
+        - $ref: "#/components/parameters/Interval"
+      responses:
+        "200":
+          description: XP history for the requested player and time range
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlayerXpHistory"
+              example:
+                playerId: 6f758677-966a-4435-9859-e1b706478f48
+                username: thejoshj
+                from: "2026-08-26T16:00:00Z"
+                to: "2026-08-26T18:00:00Z"
+                skills:
+                  - skillId: 0
+                    points:
+                      - observedAt: "2026-08-26T16:15:00Z"
+                        receivedAt: "2026-08-26T16:15:01Z"
+                        xp: 13450000
+                        interval: 15m
+                      - observedAt: "2026-08-26T16:30:00Z"
+                        receivedAt: "2026-08-26T16:30:01Z"
+                        xp: 13451234
+                        interval: 15m
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/PlayerNotFound"
+        "422":
+          $ref: "#/components/responses/InvalidTimeRange"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /v1/players/{username}/bosses:
+    parameters:
+      - $ref: "#/components/parameters/Username"
+    get:
+      tags:
+        - Bosses
+      operationId: getPlayerBossKillCounts
+      summary: Get a player's boss kill counts
+      description: Returns the latest observed kill count for every boss known for the player.
+      responses:
+        "200":
+          description: The player's current boss kill counts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlayerBossKillCounts"
+              example:
+                playerId: 6f758677-966a-4435-9859-e1b706478f48
+                username: thejoshj
+                bosses:
+                  - bossId: 12
+                    killCount: 438
+                    observedAt: "2026-08-26T18:15:00Z"
+                    receivedAt: "2026-08-26T18:15:01Z"
+                  - bossId: 35
+                    killCount: 91
+                    observedAt: "2026-08-26T18:15:00Z"
+                    receivedAt: "2026-08-26T18:15:01Z"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/PlayerNotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /v1/bosses/{bossId}/hiscores:
+    parameters:
+      - $ref: "#/components/parameters/BossId"
+    get:
+      tags:
+        - Bosses
+      operationId: getBossHiscores
+      summary: Get a boss's kill-count hiscores
+      description: |
+        Returns players ordered by kill count descending. Ties are ordered by
+        player ID to keep page boundaries deterministic.
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: A page of boss kill-count hiscores
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BossHiscores"
+              example:
+                bossId: 12
+                pagination:
+                  page: 1
+                  pageSize: 25
+                  total: 1824
+                  totalPages: 73
+                entries:
+                  - rank: 1
+                    playerId: 6f758677-966a-4435-9859-e1b706478f48
+                    username: thejoshj
+                    killCount: 438
+                    observedAt: "2026-08-26T18:15:00Z"
+                    receivedAt: "2026-08-26T18:15:01Z"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /v1/players/{username}/drops:
+    parameters:
+      - $ref: "#/components/parameters/Username"
+    get:
+      tags:
+        - Boss Logs
+      operationId: getPlayerDropLog
+      summary: Get a player's boss drop totals
+      description: |
+        Returns each item's total obtained count, grouped by boss log region.
+        Each aggregate includes the client observation time and server receipt time.
+      responses:
+        "200":
+          description: The player's current boss drop totals
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlayerDropLog"
+              example:
+                playerId: 6f758677-966a-4435-9859-e1b706478f48
+                username: thejoshj
+                bossRegions:
+                  - bossRegionId: 12
+                    name: Example boss region
+                    items:
+                      - itemId: 47260
+                        name: Example boss drop
+                        obtainedCount: 3
+                        observedAt: "2026-08-26T18:15:00Z"
+                        receivedAt: "2026-08-26T18:15:01Z"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/PlayerNotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /v1/players/{username}/slayer:
+    parameters:
+      - $ref: "#/components/parameters/Username"
+    get:
+      tags:
+        - Slayer Logs
+      operationId: getPlayerSlayerLog
+      summary: Get a player's Slayer drop totals
+      description: |
+        Returns each item's total obtained count, grouped by Slayer log region.
+        Each aggregate includes the client observation time and server receipt time.
+      responses:
+        "200":
+          description: The player's current Slayer drop totals
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlayerSlayerLog"
+              example:
+                playerId: 6f758677-966a-4435-9859-e1b706478f48
+                username: thejoshj
+                slayerRegions:
+                  - slayerRegionId: 4
+                    name: Example Slayer region
+                    items:
+                      - itemId: 47261
+                        name: Example Slayer drop
+                        obtainedCount: 1
+                        observedAt: "2026-08-26T18:15:00Z"
+                        receivedAt: "2026-08-26T18:15:01Z"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/PlayerNotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /v1/players/{username}/drops/history:
+    parameters:
+      - $ref: "#/components/parameters/Username"
+    get:
+      tags:
+        - Boss Logs
+      operationId: getPlayerDropLogHistory
+      summary: Get a player's boss drop history
+      description: |
+        Returns individual boss drop events in ascending chronological order.
+        Each event represents one acquisition and therefore has no quantity.
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: The player's chronological boss drop events
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlayerDropLogHistory"
+              example:
+                playerId: 6f758677-966a-4435-9859-e1b706478f48
+                username: thejoshj
+                pagination:
+                  page: 1
+                  pageSize: 25
+                  total: 2
+                  totalPages: 1
+                events:
+                  - bossRegionId: 12
+                    bossRegionName: Example boss region
+                    itemId: 47260
+                    itemName: Example boss drop
+                    observedAt: "2026-08-25T20:10:00Z"
+                    receivedAt: "2026-08-25T20:10:01Z"
+                  - bossRegionId: 12
+                    bossRegionName: Example boss region
+                    itemId: 47260
+                    itemName: Example boss drop
+                    observedAt: "2026-08-26T18:15:00Z"
+                    receivedAt: "2026-08-26T18:15:01Z"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/PlayerNotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /v1/players/{username}/slayer/history:
+    parameters:
+      - $ref: "#/components/parameters/Username"
+    get:
+      tags:
+        - Slayer Logs
+      operationId: getPlayerSlayerLogHistory
+      summary: Get a player's Slayer drop history
+      description: |
+        Returns individual Slayer drop events in ascending chronological order.
+        Each event represents one acquisition and therefore has no quantity.
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: The player's chronological Slayer drop events
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlayerSlayerLogHistory"
+              example:
+                playerId: 6f758677-966a-4435-9859-e1b706478f48
+                username: thejoshj
+                pagination:
+                  page: 1
+                  pageSize: 25
+                  total: 1
+                  totalPages: 1
+                events:
+                  - slayerRegionId: 4
+                    slayerRegionName: Example Slayer region
+                    itemId: 47261
+                    itemName: Example Slayer drop
+                    observedAt: "2026-08-26T18:15:00Z"
+                    receivedAt: "2026-08-26T18:15:01Z"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/PlayerNotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /v1/players/{username}/quests:
+    parameters:
+      - $ref: "#/components/parameters/Username"
+    get:
+      tags:
+        - Quests
+      operationId: getPlayerQuests
+      summary: Get a player's quest statuses
+      description: |
+        Returns the latest observed status for every quest known for the
+        player. Quest names are resolved from their numeric in-game IDs.
+      responses:
+        "200":
+          description: The player's current quest statuses
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlayerQuests"
+              example:
+                playerId: 6f758677-966a-4435-9859-e1b706478f48
+                username: thejoshj
+                quests:
+                  - questId: 123
+                    name: Example Quest
+                    status: completed
+                    observedAt: "2026-08-26T18:15:00Z"
+                    receivedAt: "2026-08-26T18:15:01Z"
+                  - questId: 124
+                    name: Another Example Quest
+                    status: started
+                    observedAt: "2026-08-26T18:15:00Z"
+                    receivedAt: "2026-08-26T18:15:01Z"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/PlayerNotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /v1/players/{username}/achievements:
+    parameters:
+      - $ref: "#/components/parameters/Username"
+    get:
+      tags:
+        - Achievements
+      operationId: getPlayerAchievements
+      summary: Get a player's achievements
+      description: |
+        Returns the latest normalized completion state for every achievement
+        observed for the player. Complex in-game progress and requirement data
+        is reduced to a boolean before storage. Results are ordered by type and
+        then achievement ID.
+      parameters:
+        - $ref: "#/components/parameters/AchievementTypeFilter"
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          description: The player's current achievement completion states
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlayerAchievements"
+              example:
+                playerId: 6f758677-966a-4435-9859-e1b706478f48
+                username: thejoshj
+                pagination:
+                  page: 1
+                  pageSize: 25
+                  total: 2
+                  totalPages: 1
+                achievements:
+                  - achievementId: 2048
+                    name: Example Combat Achievement
+                    type: combat
+                    completed: true
+                    observedAt: "2026-08-27T18:15:00Z"
+                    receivedAt: "2026-08-27T18:15:01Z"
+                  - achievementId: 2049
+                    name: Example General Achievement
+                    type: general
+                    completed: false
+                    observedAt: "2026-08-27T18:15:00Z"
+                    receivedAt: "2026-08-27T18:15:01Z"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/PlayerNotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /v1/reference/skills:
+    get:
+      tags: [Reference]
+      operationId: listSkillReferences
+      summary: List skill IDs and names
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          $ref: "#/components/responses/ReferenceCollection"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /v1/reference/bosses:
+    get:
+      tags: [Reference]
+      operationId: listBossReferences
+      summary: List boss IDs and names
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          $ref: "#/components/responses/ReferenceCollection"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /v1/reference/items:
+    get:
+      tags: [Reference]
+      operationId: listItemReferences
+      summary: List tracked item IDs and names
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          $ref: "#/components/responses/ReferenceCollection"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /v1/reference/boss-log-regions:
+    get:
+      tags: [Reference]
+      operationId: listBossLogRegionReferences
+      summary: List boss log region IDs and names
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          $ref: "#/components/responses/ReferenceCollection"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /v1/reference/slayer-log-regions:
+    get:
+      tags: [Reference]
+      operationId: listSlayerLogRegionReferences
+      summary: List Slayer log region IDs and names
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          $ref: "#/components/responses/ReferenceCollection"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /v1/reference/quests:
+    get:
+      tags: [Reference]
+      operationId: listQuestReferences
+      summary: List quest IDs and names
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          $ref: "#/components/responses/ReferenceCollection"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /v1/reference/achievements:
+    get:
+      tags: [Reference]
+      operationId: listAchievementReferences
+      summary: List achievement IDs, names, and types
+      parameters:
+        - $ref: "#/components/parameters/AchievementTypeFilter"
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        "200":
+          $ref: "#/components/responses/ReferenceCollection"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /v1/reference/achievement-types:
+    get:
+      tags: [Reference]
+      operationId: listAchievementTypes
+      summary: List achievement types
+      responses:
+        "200":
+          description: Achievement types currently present in the reference data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AchievementTypeCollection"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+components:
+  parameters:
+    Username:
+      name: username
+      in: path
+      required: true
+      description: A current or previously observed RuneScape username. Matching is case-insensitive.
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 12
+      example: thejoshj
+    BossId:
+      name: bossId
+      in: path
+      required: true
+      description: Numeric identifier for the boss.
+      schema:
+        type: integer
+        minimum: 0
+      example: 12
+    Page:
+      name: page
+      in: query
+      required: false
+      description: One-based page number.
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PageSize:
+      name: pageSize
+      in: query
+      required: false
+      description: Number of entries to return per page.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 50
+        default: 25
+    AchievementTypeFilter:
+      name: type
+      in: query
+      required: false
+      description: |
+        Normalized achievement type to include. Use `combat` to return only
+        Combat Achievements.
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 32
+      example: combat
+    SkillIds:
+      name: skillIds
+      in: query
+      required: false
+      description: |
+        Numeric skill IDs to include. Omit this parameter to include every
+        skill known for the player.
+      style: form
+      explode: false
+      schema:
+        type: array
+        minItems: 1
+        uniqueItems: true
+        items:
+          type: integer
+          minimum: 0
+      example:
+        - 0
+        - 1
+    Days:
+      name: days
+      in: query
+      required: false
+      description: |
+        Number of previous days to return, ending when the request is made.
+        Use this instead of `from` and `to`.
+      schema:
+        type: integer
+        minimum: 1
+      example: 60
+    From:
+      name: from
+      in: query
+      required: false
+      description: |
+        Inclusive beginning of the requested time range. Required with `to`
+        when `days` is omitted.
+      schema:
+        type: string
+        format: date-time
+      example: "2026-08-19T00:00:00Z"
+    To:
+      name: to
+      in: query
+      required: false
+      description: |
+        Inclusive end of the requested time range. Required with `from` when
+        `days` is omitted and must be after `from`.
+      schema:
+        type: string
+        format: date-time
+      example: "2026-08-26T00:00:00Z"
+    Interval:
+      name: interval
+      in: query
+      required: false
+      description: |
+        Requested point interval. `auto` selects the best available interval
+        for each part of the time range.
+      schema:
+        allOf:
+          - $ref: "#/components/schemas/XpInterval"
+        default: auto
+
+  responses:
+    ReferenceCollection:
+      description: A page of numeric ID-to-name reference entries.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ReferenceCollection"
+    BadRequest:
+      description: The request could not be parsed or contains an invalid parameter.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: INVALID_REQUEST
+            message: One or more request parameters are invalid.
+            requestId: 01J67NWYF5W6W5T3XSF8Q7E2QJ
+    PlayerNotFound:
+      description: |
+        No locally tracked player matches the username. This does not imply
+        that the RuneScape account itself does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: PLAYER_NOT_FOUND
+            message: No tracked player was found for that username.
+            requestId: 01J67NWYF5W6W5T3XSF8Q7E2QJ
+    InvalidTimeRange:
+      description: The time range is valid JSON but cannot be fulfilled as requested.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: INVALID_TIME_RANGE
+            message: The `to` timestamp must be after the `from` timestamp.
+            requestId: 01J67NWYF5W6W5T3XSF8Q7E2QJ
+    InternalServerError:
+      description: An unexpected error occurred.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: INTERNAL_ERROR
+            message: An unexpected error occurred.
+            requestId: 01J67NWYF5W6W5T3XSF8Q7E2QJ
+
+  schemas:
+    Health:
+      type: object
+      additionalProperties: false
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          const: ok
+
+    XpInterval:
+      type: string
+      enum:
+        - auto
+        - 15m
+        - 1h
+        - 6h
+        - 1d
+        - 1w
+        - 1mo
+
+    StoredXpInterval:
+      type: string
+      description: The stored interval used to produce an XP point.
+      enum:
+        - 15m
+        - 1h
+        - 6h
+        - 1d
+        - 1w
+        - 1mo
+
+    PlayerCurrentXp:
+      type: object
+      additionalProperties: false
+      required:
+        - playerId
+        - username
+        - skills
+      properties:
+        playerId:
+          type: string
+          format: uuid
+          description: The stable identifier generated by RS3.Dev.
+        username:
+          type: string
+          minLength: 1
+          maxLength: 12
+        skills:
+          type: array
+          items:
+            $ref: "#/components/schemas/CurrentSkillXp"
+
+    CurrentSkillXp:
+      type: object
+      additionalProperties: false
+      required:
+        - skillId
+        - xp
+        - observedAt
+        - receivedAt
+      properties:
+        skillId:
+          type: integer
+          minimum: 0
+        xp:
+          type: integer
+          format: int64
+          minimum: 0
+          description: The latest absolute XP value observed for this skill.
+        observedAt:
+          type: string
+          format: date-time
+          description: When this skill's XP value was last observed.
+        receivedAt:
+          type: string
+          format: date-time
+          description: When the server received this value.
+
+    PlayerXpHistory:
+      type: object
+      additionalProperties: false
+      required:
+        - playerId
+        - username
+        - from
+        - to
+        - skills
+      properties:
+        playerId:
+          type: string
+          format: uuid
+          description: The stable identifier generated by RS3.Dev.
+        username:
+          type: string
+          minLength: 1
+          maxLength: 12
+        from:
+          type: string
+          format: date-time
+        to:
+          type: string
+          format: date-time
+        skills:
+          type: array
+          items:
+            $ref: "#/components/schemas/SkillXpHistory"
+
+    SkillXpHistory:
+      type: object
+      additionalProperties: false
+      required:
+        - skillId
+        - points
+      properties:
+        skillId:
+          type: integer
+          minimum: 0
+        points:
+          type: array
+          items:
+            $ref: "#/components/schemas/XpPoint"
+
+    XpPoint:
+      type: object
+      additionalProperties: false
+      required:
+        - observedAt
+        - receivedAt
+        - xp
+        - interval
+      properties:
+        observedAt:
+          type: string
+          format: date-time
+          description: The end of the represented time bucket.
+        receivedAt:
+          type: string
+          format: date-time
+          description: When the server stored this point.
+        xp:
+          type: integer
+          format: int64
+          minimum: 0
+          description: Absolute XP reconstructed at this point in time.
+        interval:
+          $ref: "#/components/schemas/StoredXpInterval"
+
+    PlayerBossKillCounts:
+      type: object
+      additionalProperties: false
+      required:
+        - playerId
+        - username
+        - bosses
+      properties:
+        playerId:
+          type: string
+          format: uuid
+          description: The stable identifier generated by RS3.Dev.
+        username:
+          type: string
+          minLength: 1
+          maxLength: 12
+        bosses:
+          type: array
+          items:
+            $ref: "#/components/schemas/BossKillCount"
+
+    BossKillCount:
+      type: object
+      additionalProperties: false
+      required:
+        - bossId
+        - killCount
+        - observedAt
+        - receivedAt
+      properties:
+        bossId:
+          type: integer
+          minimum: 0
+        killCount:
+          type: integer
+          minimum: 0
+        observedAt:
+          type: string
+          format: date-time
+        receivedAt:
+          type: string
+          format: date-time
+
+    BossHiscores:
+      type: object
+      additionalProperties: false
+      required:
+        - bossId
+        - pagination
+        - entries
+      properties:
+        bossId:
+          type: integer
+          minimum: 0
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/BossHiscoreEntry"
+
+    BossHiscoreEntry:
+      type: object
+      additionalProperties: false
+      required:
+        - rank
+        - playerId
+        - username
+        - killCount
+        - observedAt
+        - receivedAt
+      properties:
+        rank:
+          type: integer
+          minimum: 1
+        playerId:
+          type: string
+          format: uuid
+        username:
+          type: string
+          minLength: 1
+          maxLength: 12
+        killCount:
+          type: integer
+          minimum: 0
+        observedAt:
+          type: string
+          format: date-time
+        receivedAt:
+          type: string
+          format: date-time
+
+    Pagination:
+      type: object
+      additionalProperties: false
+      required:
+        - page
+        - pageSize
+        - total
+        - totalPages
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        pageSize:
+          type: integer
+          minimum: 1
+          maximum: 50
+        total:
+          type: integer
+          minimum: 0
+        totalPages:
+          type: integer
+          minimum: 0
+
+    PlayerDropLog:
+      type: object
+      additionalProperties: false
+      required:
+        - playerId
+        - username
+        - bossRegions
+      properties:
+        playerId:
+          type: string
+          format: uuid
+          description: The stable identifier generated by RS3.Dev.
+        username:
+          type: string
+          minLength: 1
+          maxLength: 12
+        bossRegions:
+          type: array
+          items:
+            $ref: "#/components/schemas/BossLogRegion"
+
+    BossLogRegion:
+      type: object
+      additionalProperties: false
+      required:
+        - bossRegionId
+        - name
+        - items
+      properties:
+        bossRegionId:
+          type: integer
+          minimum: 0
+        name:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/LogTotalItem"
+
+    PlayerSlayerLog:
+      type: object
+      additionalProperties: false
+      required:
+        - playerId
+        - username
+        - slayerRegions
+      properties:
+        playerId:
+          type: string
+          format: uuid
+          description: The stable identifier generated by RS3.Dev.
+        username:
+          type: string
+          minLength: 1
+          maxLength: 12
+        slayerRegions:
+          type: array
+          items:
+            $ref: "#/components/schemas/SlayerLogRegion"
+
+    SlayerLogRegion:
+      type: object
+      additionalProperties: false
+      required:
+        - slayerRegionId
+        - name
+        - items
+      properties:
+        slayerRegionId:
+          type: integer
+          minimum: 0
+        name:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/LogTotalItem"
+
+    LogTotalItem:
+      type: object
+      additionalProperties: false
+      required:
+        - itemId
+        - name
+        - obtainedCount
+        - observedAt
+        - receivedAt
+      properties:
+        itemId:
+          type: integer
+          minimum: 0
+          description: The item's in-game numeric ID.
+        name:
+          type: string
+        obtainedCount:
+          type: integer
+          minimum: 0
+        observedAt:
+          type: string
+          format: date-time
+          description: When the client observed this total.
+        receivedAt:
+          type: string
+          format: date-time
+          description: When the server received this total.
+
+    PlayerDropLogHistory:
+      type: object
+      additionalProperties: false
+      required:
+        - playerId
+        - username
+        - pagination
+        - events
+      properties:
+        playerId:
+          type: string
+          format: uuid
+          description: The stable identifier generated by RS3.Dev.
+        username:
+          type: string
+          minLength: 1
+          maxLength: 12
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+        events:
+          type: array
+          description: Events ordered by `observedAt` ascending.
+          items:
+            $ref: "#/components/schemas/BossDropEvent"
+
+    BossDropEvent:
+      type: object
+      additionalProperties: false
+      required:
+        - bossRegionId
+        - bossRegionName
+        - itemId
+        - itemName
+        - observedAt
+        - receivedAt
+      properties:
+        bossRegionId:
+          type: integer
+          minimum: 0
+        bossRegionName:
+          type: string
+        itemId:
+          type: integer
+          minimum: 0
+        itemName:
+          type: string
+        observedAt:
+          type: string
+          format: date-time
+          description: When the client observed the drop.
+        receivedAt:
+          type: string
+          format: date-time
+          description: When the server received the drop.
+
+    PlayerSlayerLogHistory:
+      type: object
+      additionalProperties: false
+      required:
+        - playerId
+        - username
+        - pagination
+        - events
+      properties:
+        playerId:
+          type: string
+          format: uuid
+          description: The stable identifier generated by RS3.Dev.
+        username:
+          type: string
+          minLength: 1
+          maxLength: 12
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+        events:
+          type: array
+          description: Events ordered by `observedAt` ascending.
+          items:
+            $ref: "#/components/schemas/SlayerDropEvent"
+
+    SlayerDropEvent:
+      type: object
+      additionalProperties: false
+      required:
+        - slayerRegionId
+        - slayerRegionName
+        - itemId
+        - itemName
+        - observedAt
+        - receivedAt
+      properties:
+        slayerRegionId:
+          type: integer
+          minimum: 0
+        slayerRegionName:
+          type: string
+        itemId:
+          type: integer
+          minimum: 0
+        itemName:
+          type: string
+        observedAt:
+          type: string
+          format: date-time
+          description: When the client observed the drop.
+        receivedAt:
+          type: string
+          format: date-time
+          description: When the server received the drop.
+
+    PlayerQuests:
+      type: object
+      additionalProperties: false
+      required:
+        - playerId
+        - username
+        - quests
+      properties:
+        playerId:
+          type: string
+          format: uuid
+          description: The stable identifier generated by RS3.Dev.
+        username:
+          type: string
+          minLength: 1
+          maxLength: 12
+        quests:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlayerQuest"
+
+    PlayerQuest:
+      type: object
+      additionalProperties: false
+      required:
+        - questId
+        - name
+        - status
+        - observedAt
+        - receivedAt
+      properties:
+        questId:
+          type: integer
+          minimum: 0
+          description: The quest's numeric in-game ID.
+        name:
+          type: string
+        status:
+          $ref: "#/components/schemas/QuestStatus"
+        observedAt:
+          type: string
+          format: date-time
+        receivedAt:
+          type: string
+          format: date-time
+
+    QuestStatus:
+      type: string
+      enum:
+        - not_started
+        - started
+        - completed
+
+    PlayerAchievements:
+      type: object
+      additionalProperties: false
+      required:
+        - playerId
+        - username
+        - pagination
+        - achievements
+      properties:
+        playerId:
+          type: string
+          format: uuid
+          description: The stable identifier generated by RS3.Dev.
+        username:
+          type: string
+          minLength: 1
+          maxLength: 12
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+        achievements:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlayerAchievement"
+
+    PlayerAchievement:
+      type: object
+      additionalProperties: false
+      required:
+        - achievementId
+        - name
+        - type
+        - completed
+        - observedAt
+        - receivedAt
+      properties:
+        achievementId:
+          type: integer
+          minimum: 0
+          description: The numeric RuneScape AchievementType ID.
+        name:
+          type: string
+        type:
+          type: string
+          minLength: 1
+          maxLength: 32
+          description: Normalized type; `combat` identifies Combat Achievements.
+        completed:
+          type: boolean
+        observedAt:
+          type: string
+          format: date-time
+        receivedAt:
+          type: string
+          format: date-time
+
+    ReferenceCollection:
+      type: object
+      additionalProperties: false
+      required:
+        - pagination
+        - entries
+      properties:
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReferenceEntry"
+
+    ReferenceEntry:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          minimum: 0
+        name:
+          type: string
+        type:
+          type: string
+          minLength: 1
+          maxLength: 32
+          description: Present for achievement references.
+
+    AchievementTypeCollection:
+      type: object
+      additionalProperties: false
+      required:
+        - entries
+      properties:
+        entries:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required:
+              - type
+            properties:
+              type:
+                type: string
+                minLength: 1
+                maxLength: 32
+
+    Error:
+      type: object
+      additionalProperties: false
+      required:
+        - code
+        - message
+        - requestId
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        requestId:
+          type: string
+          description: Identifier used to correlate the response with server logs.

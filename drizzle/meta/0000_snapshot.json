@@ -1,0 +1,1704 @@
+{
+  "id": "e3c2d4e9-d8f2-4a94-ad8e-349a10f7ce62",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.achievements": {
+      "name": "achievements",
+      "schema": "",
+      "columns": {
+        "achievement_id": {
+          "name": "achievement_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "achievements_type_idx": {
+          "name": "achievements_type_idx",
+          "columns": [
+            {
+              "expression": "type",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "achievement_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "achievements_achievement_id_nonnegative": {
+          "name": "achievements_achievement_id_nonnegative",
+          "value": "\"achievements\".\"achievement_id\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.boss_log_regions": {
+      "name": "boss_log_regions",
+      "schema": "",
+      "columns": {
+        "boss_region_id": {
+          "name": "boss_region_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "boss_log_regions_id_nonnegative": {
+          "name": "boss_log_regions_id_nonnegative",
+          "value": "\"boss_log_regions\".\"boss_region_id\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.bosses": {
+      "name": "bosses",
+      "schema": "",
+      "columns": {
+        "boss_id": {
+          "name": "boss_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "bosses_boss_id_nonnegative": {
+          "name": "bosses_boss_id_nonnegative",
+          "value": "\"bosses\".\"boss_id\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.items": {
+      "name": "items",
+      "schema": "",
+      "columns": {
+        "item_id": {
+          "name": "item_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "items_item_id_nonnegative": {
+          "name": "items_item_id_nonnegative",
+          "value": "\"items\".\"item_id\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.player_achievements": {
+      "name": "player_achievements",
+      "schema": "",
+      "columns": {
+        "player_id": {
+          "name": "player_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "achievement_id": {
+          "name": "achievement_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "completed": {
+          "name": "completed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "observed_at": {
+          "name": "observed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "received_at": {
+          "name": "received_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "player_achievements_player_id_players_player_id_fk": {
+          "name": "player_achievements_player_id_players_player_id_fk",
+          "tableFrom": "player_achievements",
+          "tableTo": "players",
+          "columnsFrom": [
+            "player_id"
+          ],
+          "columnsTo": [
+            "player_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "player_achievements_achievement_id_achievements_achievement_id_fk": {
+          "name": "player_achievements_achievement_id_achievements_achievement_id_fk",
+          "tableFrom": "player_achievements",
+          "tableTo": "achievements",
+          "columnsFrom": [
+            "achievement_id"
+          ],
+          "columnsTo": [
+            "achievement_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "player_achievements_pk": {
+          "name": "player_achievements_pk",
+          "columns": [
+            "player_id",
+            "achievement_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "player_achievements_achievement_id_nonnegative": {
+          "name": "player_achievements_achievement_id_nonnegative",
+          "value": "\"player_achievements\".\"achievement_id\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.player_boss_kill_counts": {
+      "name": "player_boss_kill_counts",
+      "schema": "",
+      "columns": {
+        "player_id": {
+          "name": "player_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "boss_id": {
+          "name": "boss_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kill_count": {
+          "name": "kill_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "observed_at": {
+          "name": "observed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "received_at": {
+          "name": "received_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "player_boss_kill_counts_hiscores_idx": {
+          "name": "player_boss_kill_counts_hiscores_idx",
+          "columns": [
+            {
+              "expression": "boss_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "kill_count",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "last"
+            },
+            {
+              "expression": "player_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "player_boss_kill_counts_player_id_players_player_id_fk": {
+          "name": "player_boss_kill_counts_player_id_players_player_id_fk",
+          "tableFrom": "player_boss_kill_counts",
+          "tableTo": "players",
+          "columnsFrom": [
+            "player_id"
+          ],
+          "columnsTo": [
+            "player_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "player_boss_kill_counts_boss_id_bosses_boss_id_fk": {
+          "name": "player_boss_kill_counts_boss_id_bosses_boss_id_fk",
+          "tableFrom": "player_boss_kill_counts",
+          "tableTo": "bosses",
+          "columnsFrom": [
+            "boss_id"
+          ],
+          "columnsTo": [
+            "boss_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "player_boss_kill_counts_pk": {
+          "name": "player_boss_kill_counts_pk",
+          "columns": [
+            "player_id",
+            "boss_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "player_boss_kill_counts_nonnegative": {
+          "name": "player_boss_kill_counts_nonnegative",
+          "value": "\"player_boss_kill_counts\".\"kill_count\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.player_drop_log": {
+      "name": "player_drop_log",
+      "schema": "",
+      "columns": {
+        "player_id": {
+          "name": "player_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "boss_region_id": {
+          "name": "boss_region_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "item_id": {
+          "name": "item_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "obtained_count": {
+          "name": "obtained_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "observed_at": {
+          "name": "observed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "received_at": {
+          "name": "received_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "player_drop_log_player_id_players_player_id_fk": {
+          "name": "player_drop_log_player_id_players_player_id_fk",
+          "tableFrom": "player_drop_log",
+          "tableTo": "players",
+          "columnsFrom": [
+            "player_id"
+          ],
+          "columnsTo": [
+            "player_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "player_drop_log_boss_region_id_boss_log_regions_boss_region_id_fk": {
+          "name": "player_drop_log_boss_region_id_boss_log_regions_boss_region_id_fk",
+          "tableFrom": "player_drop_log",
+          "tableTo": "boss_log_regions",
+          "columnsFrom": [
+            "boss_region_id"
+          ],
+          "columnsTo": [
+            "boss_region_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "player_drop_log_item_id_items_item_id_fk": {
+          "name": "player_drop_log_item_id_items_item_id_fk",
+          "tableFrom": "player_drop_log",
+          "tableTo": "items",
+          "columnsFrom": [
+            "item_id"
+          ],
+          "columnsTo": [
+            "item_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "player_drop_log_pk": {
+          "name": "player_drop_log_pk",
+          "columns": [
+            "player_id",
+            "boss_region_id",
+            "item_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "player_drop_log_obtained_count_nonnegative": {
+          "name": "player_drop_log_obtained_count_nonnegative",
+          "value": "\"player_drop_log\".\"obtained_count\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.player_drop_log_history": {
+      "name": "player_drop_log_history",
+      "schema": "",
+      "columns": {
+        "player_id": {
+          "name": "player_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "boss_region_id": {
+          "name": "boss_region_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "item_id": {
+          "name": "item_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "observed_at": {
+          "name": "observed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "received_at": {
+          "name": "received_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "player_drop_log_history_chronological_idx": {
+          "name": "player_drop_log_history_chronological_idx",
+          "columns": [
+            {
+              "expression": "player_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "observed_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "player_drop_log_history_player_id_players_player_id_fk": {
+          "name": "player_drop_log_history_player_id_players_player_id_fk",
+          "tableFrom": "player_drop_log_history",
+          "tableTo": "players",
+          "columnsFrom": [
+            "player_id"
+          ],
+          "columnsTo": [
+            "player_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "player_drop_log_history_boss_region_id_boss_log_regions_boss_region_id_fk": {
+          "name": "player_drop_log_history_boss_region_id_boss_log_regions_boss_region_id_fk",
+          "tableFrom": "player_drop_log_history",
+          "tableTo": "boss_log_regions",
+          "columnsFrom": [
+            "boss_region_id"
+          ],
+          "columnsTo": [
+            "boss_region_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "player_drop_log_history_item_id_items_item_id_fk": {
+          "name": "player_drop_log_history_item_id_items_item_id_fk",
+          "tableFrom": "player_drop_log_history",
+          "tableTo": "items",
+          "columnsFrom": [
+            "item_id"
+          ],
+          "columnsTo": [
+            "item_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "player_drop_log_history_pk": {
+          "name": "player_drop_log_history_pk",
+          "columns": [
+            "player_id",
+            "boss_region_id",
+            "item_id",
+            "observed_at"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.player_quests": {
+      "name": "player_quests",
+      "schema": "",
+      "columns": {
+        "player_id": {
+          "name": "player_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "quest_id": {
+          "name": "quest_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(11)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "observed_at": {
+          "name": "observed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "received_at": {
+          "name": "received_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "player_quests_player_id_players_player_id_fk": {
+          "name": "player_quests_player_id_players_player_id_fk",
+          "tableFrom": "player_quests",
+          "tableTo": "players",
+          "columnsFrom": [
+            "player_id"
+          ],
+          "columnsTo": [
+            "player_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "player_quests_quest_id_quests_quest_id_fk": {
+          "name": "player_quests_quest_id_quests_quest_id_fk",
+          "tableFrom": "player_quests",
+          "tableTo": "quests",
+          "columnsFrom": [
+            "quest_id"
+          ],
+          "columnsTo": [
+            "quest_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "player_quests_pk": {
+          "name": "player_quests_pk",
+          "columns": [
+            "player_id",
+            "quest_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "player_quests_status_valid": {
+          "name": "player_quests_status_valid",
+          "value": "\"player_quests\".\"status\" in ('not_started', 'started', 'completed')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.player_slayer_log": {
+      "name": "player_slayer_log",
+      "schema": "",
+      "columns": {
+        "player_id": {
+          "name": "player_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "slayer_region_id": {
+          "name": "slayer_region_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "item_id": {
+          "name": "item_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "obtained_count": {
+          "name": "obtained_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "observed_at": {
+          "name": "observed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "received_at": {
+          "name": "received_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "player_slayer_log_player_id_players_player_id_fk": {
+          "name": "player_slayer_log_player_id_players_player_id_fk",
+          "tableFrom": "player_slayer_log",
+          "tableTo": "players",
+          "columnsFrom": [
+            "player_id"
+          ],
+          "columnsTo": [
+            "player_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "player_slayer_log_slayer_region_id_slayer_log_regions_slayer_region_id_fk": {
+          "name": "player_slayer_log_slayer_region_id_slayer_log_regions_slayer_region_id_fk",
+          "tableFrom": "player_slayer_log",
+          "tableTo": "slayer_log_regions",
+          "columnsFrom": [
+            "slayer_region_id"
+          ],
+          "columnsTo": [
+            "slayer_region_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "player_slayer_log_item_id_items_item_id_fk": {
+          "name": "player_slayer_log_item_id_items_item_id_fk",
+          "tableFrom": "player_slayer_log",
+          "tableTo": "items",
+          "columnsFrom": [
+            "item_id"
+          ],
+          "columnsTo": [
+            "item_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "player_slayer_log_pk": {
+          "name": "player_slayer_log_pk",
+          "columns": [
+            "player_id",
+            "slayer_region_id",
+            "item_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "player_slayer_log_obtained_count_nonnegative": {
+          "name": "player_slayer_log_obtained_count_nonnegative",
+          "value": "\"player_slayer_log\".\"obtained_count\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.player_slayer_log_history": {
+      "name": "player_slayer_log_history",
+      "schema": "",
+      "columns": {
+        "player_id": {
+          "name": "player_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "slayer_region_id": {
+          "name": "slayer_region_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "item_id": {
+          "name": "item_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "observed_at": {
+          "name": "observed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "received_at": {
+          "name": "received_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "player_slayer_log_history_chronological_idx": {
+          "name": "player_slayer_log_history_chronological_idx",
+          "columns": [
+            {
+              "expression": "player_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "observed_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "player_slayer_log_history_player_id_players_player_id_fk": {
+          "name": "player_slayer_log_history_player_id_players_player_id_fk",
+          "tableFrom": "player_slayer_log_history",
+          "tableTo": "players",
+          "columnsFrom": [
+            "player_id"
+          ],
+          "columnsTo": [
+            "player_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "player_slayer_log_history_slayer_region_id_slayer_log_regions_slayer_region_id_fk": {
+          "name": "player_slayer_log_history_slayer_region_id_slayer_log_regions_slayer_region_id_fk",
+          "tableFrom": "player_slayer_log_history",
+          "tableTo": "slayer_log_regions",
+          "columnsFrom": [
+            "slayer_region_id"
+          ],
+          "columnsTo": [
+            "slayer_region_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "player_slayer_log_history_item_id_items_item_id_fk": {
+          "name": "player_slayer_log_history_item_id_items_item_id_fk",
+          "tableFrom": "player_slayer_log_history",
+          "tableTo": "items",
+          "columnsFrom": [
+            "item_id"
+          ],
+          "columnsTo": [
+            "item_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "player_slayer_log_history_pk": {
+          "name": "player_slayer_log_history_pk",
+          "columns": [
+            "player_id",
+            "slayer_region_id",
+            "item_id",
+            "observed_at"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.player_usernames": {
+      "name": "player_usernames",
+      "schema": "",
+      "columns": {
+        "player_id": {
+          "name": "player_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "username": {
+          "name": "username",
+          "type": "varchar(12)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "observed_at": {
+          "name": "observed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "received_at": {
+          "name": "received_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "player_usernames_username_ci_uidx": {
+          "name": "player_usernames_username_ci_uidx",
+          "columns": [
+            {
+              "expression": "lower(\"username\")",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "player_usernames_player_id_idx": {
+          "name": "player_usernames_player_id_idx",
+          "columns": [
+            {
+              "expression": "player_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "player_usernames_player_id_players_player_id_fk": {
+          "name": "player_usernames_player_id_players_player_id_fk",
+          "tableFrom": "player_usernames",
+          "tableTo": "players",
+          "columnsFrom": [
+            "player_id"
+          ],
+          "columnsTo": [
+            "player_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "player_usernames_pk": {
+          "name": "player_usernames_pk",
+          "columns": [
+            "player_id",
+            "username"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.player_xp_15m": {
+      "name": "player_xp_15m",
+      "schema": "",
+      "columns": {
+        "player_id": {
+          "name": "player_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "skill_id": {
+          "name": "skill_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "xp": {
+          "name": "xp",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "observed_at": {
+          "name": "observed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "received_at": {
+          "name": "received_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "player_xp_15m_player_id_players_player_id_fk": {
+          "name": "player_xp_15m_player_id_players_player_id_fk",
+          "tableFrom": "player_xp_15m",
+          "tableTo": "players",
+          "columnsFrom": [
+            "player_id"
+          ],
+          "columnsTo": [
+            "player_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "player_xp_15m_skill_id_skills_skill_id_fk": {
+          "name": "player_xp_15m_skill_id_skills_skill_id_fk",
+          "tableFrom": "player_xp_15m",
+          "tableTo": "skills",
+          "columnsFrom": [
+            "skill_id"
+          ],
+          "columnsTo": [
+            "skill_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "player_xp_15m_pk": {
+          "name": "player_xp_15m_pk",
+          "columns": [
+            "player_id",
+            "skill_id",
+            "observed_at"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "player_xp_15m_xp_positive": {
+          "name": "player_xp_15m_xp_positive",
+          "value": "\"player_xp_15m\".\"xp\" > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.player_xp_1d": {
+      "name": "player_xp_1d",
+      "schema": "",
+      "columns": {
+        "player_id": {
+          "name": "player_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "skill_id": {
+          "name": "skill_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "xp": {
+          "name": "xp",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "observed_at": {
+          "name": "observed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "received_at": {
+          "name": "received_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "player_xp_1d_player_id_players_player_id_fk": {
+          "name": "player_xp_1d_player_id_players_player_id_fk",
+          "tableFrom": "player_xp_1d",
+          "tableTo": "players",
+          "columnsFrom": [
+            "player_id"
+          ],
+          "columnsTo": [
+            "player_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "player_xp_1d_skill_id_skills_skill_id_fk": {
+          "name": "player_xp_1d_skill_id_skills_skill_id_fk",
+          "tableFrom": "player_xp_1d",
+          "tableTo": "skills",
+          "columnsFrom": [
+            "skill_id"
+          ],
+          "columnsTo": [
+            "skill_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "player_xp_1d_pk": {
+          "name": "player_xp_1d_pk",
+          "columns": [
+            "player_id",
+            "skill_id",
+            "observed_at"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "player_xp_1d_xp_positive": {
+          "name": "player_xp_1d_xp_positive",
+          "value": "\"player_xp_1d\".\"xp\" > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.player_xp_1h": {
+      "name": "player_xp_1h",
+      "schema": "",
+      "columns": {
+        "player_id": {
+          "name": "player_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "skill_id": {
+          "name": "skill_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "xp": {
+          "name": "xp",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "observed_at": {
+          "name": "observed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "received_at": {
+          "name": "received_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "player_xp_1h_player_id_players_player_id_fk": {
+          "name": "player_xp_1h_player_id_players_player_id_fk",
+          "tableFrom": "player_xp_1h",
+          "tableTo": "players",
+          "columnsFrom": [
+            "player_id"
+          ],
+          "columnsTo": [
+            "player_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "player_xp_1h_skill_id_skills_skill_id_fk": {
+          "name": "player_xp_1h_skill_id_skills_skill_id_fk",
+          "tableFrom": "player_xp_1h",
+          "tableTo": "skills",
+          "columnsFrom": [
+            "skill_id"
+          ],
+          "columnsTo": [
+            "skill_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "player_xp_1h_pk": {
+          "name": "player_xp_1h_pk",
+          "columns": [
+            "player_id",
+            "skill_id",
+            "observed_at"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "player_xp_1h_xp_positive": {
+          "name": "player_xp_1h_xp_positive",
+          "value": "\"player_xp_1h\".\"xp\" > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.player_xp_1mo": {
+      "name": "player_xp_1mo",
+      "schema": "",
+      "columns": {
+        "player_id": {
+          "name": "player_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "skill_id": {
+          "name": "skill_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "xp": {
+          "name": "xp",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "observed_at": {
+          "name": "observed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "received_at": {
+          "name": "received_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "player_xp_1mo_player_id_players_player_id_fk": {
+          "name": "player_xp_1mo_player_id_players_player_id_fk",
+          "tableFrom": "player_xp_1mo",
+          "tableTo": "players",
+          "columnsFrom": [
+            "player_id"
+          ],
+          "columnsTo": [
+            "player_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "player_xp_1mo_skill_id_skills_skill_id_fk": {
+          "name": "player_xp_1mo_skill_id_skills_skill_id_fk",
+          "tableFrom": "player_xp_1mo",
+          "tableTo": "skills",
+          "columnsFrom": [
+            "skill_id"
+          ],
+          "columnsTo": [
+            "skill_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "player_xp_1mo_pk": {
+          "name": "player_xp_1mo_pk",
+          "columns": [
+            "player_id",
+            "skill_id",
+            "observed_at"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "player_xp_1mo_xp_positive": {
+          "name": "player_xp_1mo_xp_positive",
+          "value": "\"player_xp_1mo\".\"xp\" > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.player_xp_1w": {
+      "name": "player_xp_1w",
+      "schema": "",
+      "columns": {
+        "player_id": {
+          "name": "player_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "skill_id": {
+          "name": "skill_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "xp": {
+          "name": "xp",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "observed_at": {
+          "name": "observed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "received_at": {
+          "name": "received_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "player_xp_1w_player_id_players_player_id_fk": {
+          "name": "player_xp_1w_player_id_players_player_id_fk",
+          "tableFrom": "player_xp_1w",
+          "tableTo": "players",
+          "columnsFrom": [
+            "player_id"
+          ],
+          "columnsTo": [
+            "player_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "player_xp_1w_skill_id_skills_skill_id_fk": {
+          "name": "player_xp_1w_skill_id_skills_skill_id_fk",
+          "tableFrom": "player_xp_1w",
+          "tableTo": "skills",
+          "columnsFrom": [
+            "skill_id"
+          ],
+          "columnsTo": [
+            "skill_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "player_xp_1w_pk": {
+          "name": "player_xp_1w_pk",
+          "columns": [
+            "player_id",
+            "skill_id",
+            "observed_at"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "player_xp_1w_xp_positive": {
+          "name": "player_xp_1w_xp_positive",
+          "value": "\"player_xp_1w\".\"xp\" > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.player_xp_6h": {
+      "name": "player_xp_6h",
+      "schema": "",
+      "columns": {
+        "player_id": {
+          "name": "player_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "skill_id": {
+          "name": "skill_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "xp": {
+          "name": "xp",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "observed_at": {
+          "name": "observed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "received_at": {
+          "name": "received_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "player_xp_6h_player_id_players_player_id_fk": {
+          "name": "player_xp_6h_player_id_players_player_id_fk",
+          "tableFrom": "player_xp_6h",
+          "tableTo": "players",
+          "columnsFrom": [
+            "player_id"
+          ],
+          "columnsTo": [
+            "player_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "player_xp_6h_skill_id_skills_skill_id_fk": {
+          "name": "player_xp_6h_skill_id_skills_skill_id_fk",
+          "tableFrom": "player_xp_6h",
+          "tableTo": "skills",
+          "columnsFrom": [
+            "skill_id"
+          ],
+          "columnsTo": [
+            "skill_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "player_xp_6h_pk": {
+          "name": "player_xp_6h_pk",
+          "columns": [
+            "player_id",
+            "skill_id",
+            "observed_at"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "player_xp_6h_xp_positive": {
+          "name": "player_xp_6h_xp_positive",
+          "value": "\"player_xp_6h\".\"xp\" > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.player_xp_current": {
+      "name": "player_xp_current",
+      "schema": "",
+      "columns": {
+        "player_id": {
+          "name": "player_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "skill_id": {
+          "name": "skill_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "xp": {
+          "name": "xp",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "observed_at": {
+          "name": "observed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "received_at": {
+          "name": "received_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "player_xp_current_player_id_players_player_id_fk": {
+          "name": "player_xp_current_player_id_players_player_id_fk",
+          "tableFrom": "player_xp_current",
+          "tableTo": "players",
+          "columnsFrom": [
+            "player_id"
+          ],
+          "columnsTo": [
+            "player_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "player_xp_current_skill_id_skills_skill_id_fk": {
+          "name": "player_xp_current_skill_id_skills_skill_id_fk",
+          "tableFrom": "player_xp_current",
+          "tableTo": "skills",
+          "columnsFrom": [
+            "skill_id"
+          ],
+          "columnsTo": [
+            "skill_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "player_xp_current_pk": {
+          "name": "player_xp_current_pk",
+          "columns": [
+            "player_id",
+            "skill_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "player_xp_current_xp_nonnegative": {
+          "name": "player_xp_current_xp_nonnegative",
+          "value": "\"player_xp_current\".\"xp\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.players": {
+      "name": "players",
+      "schema": "",
+      "columns": {
+        "player_id": {
+          "name": "player_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "username": {
+          "name": "username",
+          "type": "varchar(12)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "players_username_ci_uidx": {
+          "name": "players_username_ci_uidx",
+          "columns": [
+            {
+              "expression": "lower(\"username\")",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.quests": {
+      "name": "quests",
+      "schema": "",
+      "columns": {
+        "quest_id": {
+          "name": "quest_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "quests_quest_id_nonnegative": {
+          "name": "quests_quest_id_nonnegative",
+          "value": "\"quests\".\"quest_id\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.skills": {
+      "name": "skills",
+      "schema": "",
+      "columns": {
+        "skill_id": {
+          "name": "skill_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "skills_skill_id_nonnegative": {
+          "name": "skills_skill_id_nonnegative",
+          "value": "\"skills\".\"skill_id\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.slayer_log_regions": {
+      "name": "slayer_log_regions",
+      "schema": "",
+      "columns": {
+        "slayer_region_id": {
+          "name": "slayer_region_id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "slayer_log_regions_id_nonnegative": {
+          "name": "slayer_log_regions_id_nonnegative",
+          "value": "\"slayer_log_regions\".\"slayer_region_id\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
