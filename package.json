@@ -1,0 +1,28 @@
+{
+  "name": "rs3-dev-api",
+  "version": "0.0.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --hot src/index.ts",
+    "start": "bun run src/index.ts",
+    "db:check": "drizzle-kit check",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hono/swagger-ui": "0.6.1",
+    "drizzle-orm": "0.45.2",
+    "hono": "4.13.5",
+    "postgres": "3.4.9"
+  },
+  "devDependencies": {
+    "@types/bun": "1.4.0",
+    "drizzle-kit": "0.31.10",
+    "typescript": "7.0.2"
+  }
+}

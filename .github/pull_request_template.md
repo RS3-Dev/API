@@ -13,7 +13,7 @@ Describe what this pull request changes and why.
 ## Checklist
 
 - [ ] The change is scoped to the stated purpose of the pull request.
-- [ ] Documentation was updated when project behavior, scope, or decisions changed.
+- [ ] The README or OpenAPI contract was updated when architecture or public behavior changed.
 - [ ] Open questions or unresolved design concerns are called out clearly.
 - [ ] The change does not introduce a stable API contract without prior discussion.
 
