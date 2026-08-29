@@ -134,6 +134,7 @@ kept at `drizzle/0000_initial_schema.sql`.
 
 The implemented public read routes cover:
 
+- current XP and reconstructed XP history;
 - current boss kill counts and paginated boss hiscores;
 - current boss drop totals and paginated drop history;
 - current Slayer log totals and paginated Slayer history;
@@ -142,9 +143,7 @@ The implemented public read routes cover:
 - reference mappings for skills, bosses, items, regions, quests, achievements,
   and achievement types.
 
-Current and historical XP routes are defined in the OpenAPI contract, but their
-handlers depend on the ingestion and rollup behavior and are not implemented
-yet. Paginated endpoints default to 25 entries and accept at most 50.
+Paginated endpoints default to 25 entries and accept at most 50.
 
 The full request and response contract is in [`openapi.yaml`](openapi.yaml) and
 is available through Swagger UI at `/docs` while the application is running.
@@ -155,12 +154,14 @@ The repository includes:
 
 - the Bun and Hono public API application;
 - the Drizzle schema and initial PostgreSQL schema;
-- the implemented non-XP read handlers;
+- database-backed read handlers for the documented public API;
+- an idempotent development seed with linked usernames and mock data for every
+  implemented player-data domain;
 - a health check and Swagger UI; and
 - basic route, pagination, type, and schema validation tests.
 
-The remaining architectural work is the ingestion service, reference-data
-population, XP ingestion and rollups, XP read handlers, Clerk authentication,
+The remaining architectural work is the ingestion service, production
+reference-data population, XP ingestion and rollups, Clerk authentication,
 rate limiting, usage analytics, and production deployment.
 
 ## Technology
@@ -180,7 +181,16 @@ bun run dev
 ```
 
 Copy `.env.example` to `.env` and set `DATABASE_URL` before running commands
-that connect to PostgreSQL. Once the server is running:
+that connect to PostgreSQL. Apply the schema and load the development data with:
+
+```sh
+bun run db:migrate
+bun run db:seed
+```
+
+The seed creates `TheJoshJ` (also resolvable through the previous username
+`OldJosh`) plus two additional mock players for boss hiscores. It replaces only
+those fixed mock identities when run again. Once the server is running:
 
 - Swagger UI: `http://localhost:3000/docs`
 - Health check: `http://localhost:3000/health`
@@ -192,6 +202,7 @@ Common verification commands:
 bun test
 bun run typecheck
 bun run db:check
+bun run db:smoke
 ```
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md) before changing the schema or public

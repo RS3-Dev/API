@@ -6,6 +6,7 @@ import { bossRoutes } from "./routes/bosses";
 import { playerLogRoutes } from "./routes/player-logs";
 import { questRoutes } from "./routes/quests";
 import { referenceRoutes } from "./routes/references";
+import { xpRoutes } from "./routes/xp";
 
 const openApiFile = Bun.file(new URL("../openapi.yaml", import.meta.url));
 
@@ -16,6 +17,7 @@ app.route("/", bossRoutes);
 app.route("/", playerLogRoutes);
 app.route("/", questRoutes);
 app.route("/", referenceRoutes);
+app.route("/", xpRoutes);
 
 app.get("/health", (context) => context.json({ status: "ok" }));
 

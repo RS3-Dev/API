@@ -28,3 +28,12 @@ export function getDatabase() {
   database = createDatabase(databaseUrl);
   return database.db;
 }
+
+export async function closeDatabase() {
+  if (!database) {
+    return;
+  }
+
+  await database.sql.end();
+  database = undefined;
+}

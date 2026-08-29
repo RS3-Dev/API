@@ -49,6 +49,11 @@ describe("application routes", () => {
     "/v1/players/thejoshj/achievements?pageSize=51",
     "/v1/players/thejoshj/drops/history?page=0",
     "/v1/players/thejoshj/slayer/history?pageSize=51",
+    "/v1/players/thejoshj/xp/history",
+    "/v1/players/thejoshj/xp/history?days=0",
+    "/v1/players/thejoshj/xp/history?days=7&from=2026-08-01T00:00:00Z",
+    "/v1/players/thejoshj/xp/history?days=7&interval=5m",
+    "/v1/players/thejoshj/xp/history?days=7&skillIds=0,nope",
     "/v1/reference/items?pageSize=51",
   ])("rejects invalid player-data request: %s", async (path) => {
     const response = await app.request(path);

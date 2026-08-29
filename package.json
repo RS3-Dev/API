@@ -10,6 +10,8 @@
     "db:check": "drizzle-kit check",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "db:seed": "bun run src/db/seed.ts",
+    "db:smoke": "bun run src/db/smoke.ts",
     "db:studio": "drizzle-kit studio",
     "test": "bun test",
     "typecheck": "tsc --noEmit"
